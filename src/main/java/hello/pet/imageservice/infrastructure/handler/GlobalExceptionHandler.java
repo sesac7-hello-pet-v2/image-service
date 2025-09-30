@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(HelloPetException.class)
 	public ResponseEntity<?> helloPetExceptionHandle(HelloPetException e) {
-		log.error("CoTaskException occurred: {}", e.getMessage(), e);
+		log.error("HelloPetException occurred: {}", e.getMessage(), e);
 		return ResponseEntity.status(e.getStatus())
 			.body(
 				ExceptionResponse.of(
