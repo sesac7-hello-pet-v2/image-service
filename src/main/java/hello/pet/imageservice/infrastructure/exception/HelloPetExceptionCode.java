@@ -60,10 +60,10 @@ public enum HelloPetExceptionCode {
 	private final String message;
 
 	/**
-	 * 열거형 상수에 연결된 `@ExplainError` 애너테이션의 설명 문구를 반환합니다.
+	 * 열거형 상수에 연결된 `@ExplainError` 애너테이션의 설명문을 제공한다.
 	 *
-	 * @return 애너테이션의 `value()`에 해당하는 설명 문자열. 해당 애너테이션이 없으면 enum 인스턴스의 `message` 값을 반환합니다.
-	 * @throws NoSuchFieldException 현재 열거형 상수에 대응하는 필드를 찾을 수 없을 경우 발생합니다.
+	 * @return 애너테이션의 `value()`에 해당하는 설명 문자열. 애너테이션이 없으면 열거형 상수의 `message` 값을 반환한다.
+	 * @throws NoSuchFieldException 현재 열거형 상수에 대응하는 필드를 찾을 수 없는 경우
 	 */
 	public String getExplainError() throws NoSuchFieldException {
 		// 1. CoTaskExceptionCode 클래스에서 현재 enum 상수의 필드를 찾음

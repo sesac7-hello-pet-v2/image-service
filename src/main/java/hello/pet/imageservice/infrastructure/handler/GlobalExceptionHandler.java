@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	/**
-	 * HelloPetException을 처리하여 표준화된 에러 응답과 예외에 지정된 HTTP 상태를 반환한다.
+	 * HelloPetException을 처리하여 예외에 지정된 HTTP 상태와 표준화된 ExceptionResponse를 응답한다.
 	 *
 	 * @param e 처리할 HelloPetException 인스턴스 — 응답의 HTTP 상태, 코드, 메시지를 제공한다.
 	 * @return 응답 본문에 ExceptionResponse(예외의 상태, 코드, 메시지)를 담고 예외가 지정한 HTTP 상태를 설정한 ResponseEntity
@@ -65,6 +65,11 @@ public class GlobalExceptionHandler {
 			);
 	}
 
+	/**
+	 * 모든 예외를 잡아 내부 서버 오류 상태의 표준화된 오류 응답을 생성한다.
+	 *
+	 * @return HTTP 500 (INTERNAL_SERVER_ERROR) 상태와 `HelloPetExceptionCode.INTERNAL_SERVER_ERROR`에 기반한 `ExceptionResponse`를 포함한 `ResponseEntity`
+	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> exceptionHandler(Exception e) {
 		HelloPetExceptionCode code = HelloPetExceptionCode.INTERNAL_SERVER_ERROR;
