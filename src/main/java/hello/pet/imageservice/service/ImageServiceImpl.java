@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -72,7 +73,7 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	private String generateS3Key(ImageUploadRequest request) {
-		Long imageName = System.currentTimeMillis();
+		String imageName = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 5);
 		String imageExtension = getFileExtension(request.file().getOriginalFilename());
 		if (request.postId() == null) {
 			return String.format("%s/%s.%s", request.userId(), imageName, imageExtension);
