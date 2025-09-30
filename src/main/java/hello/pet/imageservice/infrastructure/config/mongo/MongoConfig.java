@@ -60,10 +60,9 @@ public class MongoConfig {
 	}
 
 	/**
-	 * 스프링의 {@link LocalValidatorFactoryBean} 빈을 정의합니다.
-	 * 이 빈은 JSR-303/JSR-380 Bean Validation을 위한 Validator를 제공합니다.
+	 * JSR-303/JSR-380 Bean Validation을 위한 LocalValidatorFactoryBean 빈을 생성합니다.
 	 *
-	 * @return {@link LocalValidatorFactoryBean} 유효성 검사 빈
+	 * @return JSR-303/JSR-380 Validator를 제공하는 LocalValidatorFactoryBean 인스턴스
 	 */
 	@Bean
 	public LocalValidatorFactoryBean validator() {

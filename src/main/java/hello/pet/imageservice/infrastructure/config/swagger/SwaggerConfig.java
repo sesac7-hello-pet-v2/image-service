@@ -56,11 +56,11 @@ public class SwaggerConfig {
 	}
 
 	/**
-	 * ApiErrorCodeExamples 애노테이션을 검사해 Operation에 에러 응답 예시를 추가하는 OperationCustomizer를 생성합니다.
+	 * 컨트롤러 핸들러의 ApiErrorCodeExamples 애노테이션을 검사하여 해당 예외 코드 예시들을 Operation의 응답에 추가하는 OperationCustomizer를 생성한다.
 	 *
-	 * 컨트롤러 메서드와 해당 인터페이스에서 ApiErrorCodeExamples를 찾아, 애노테이션이 존재하면 해당 예외 코드들로부터 생성된 예시들을 Operation의 응답에 추가합니다.
+	 * 핸들러 메서드(메서드, 구현 클래스, 구현 인터페이스 순)에서 ApiErrorCodeExamples를 찾고, 애노테이션이 존재하면 해당 예외 코드들로부터 생성된 예시들을 Operation의 ApiResponses에 병합한다.
 	 *
-	 * @return ApiErrorCodeExamples 애노테이션을 기반으로 Operation의 에러 응답 예시를 동적으로 추가하는 OperationCustomizer 빈
+	 * @return 핸들러 메서드에 지정된 ApiErrorCodeExamples에 따라 Operation의 에러 응답 예시를 동적으로 추가하는 OperationCustomizer 빈
 	 */
 	@Bean
 	public OperationCustomizer operationCustomizer() {
@@ -140,16 +140,16 @@ public class SwaggerConfig {
 	}
 
 	/**
-	 * 400 BAD_REQUEST에 해당하는 검증(Validation) 오류의 Swagger Example을 담은 ExampleHolder를 생성하여 반환합니다.
+	 * 입력값 검증 실패(HTTP 400)를 나타내는 Swagger ExampleHolder를 생성한다.
 	 *
-	 * 반환되는 ExampleHolder는:
-	 * - holder: CommonResponse.fail로 감싼 ExceptionResponse(상태 400, 코드 "VALIDATION_ERROR", 메시지 및 필드별 상세 메시지)를 포함하는 Swagger Example
-	 * - name: "VALIDATION_ERROR"
+	 * 생성된 ExampleHolder는 다음을 포함한다:
+	 * - holder: 상태 400, 코드 `"VALIDATION_ERROR"`, 일반 메시지 및 필드별 상세 메시지를 담은 ExceptionResponse를 값으로 가진 Swagger Example
+	 * - name: `"VALIDATION_ERROR"`
 	 * - code: 400
 	 *
-	 * 이 예시는 API 문서에서 입력값 검증 실패 사례를 예시로 보여주기 위해 사용됩니다.
+	 * 이 예시는 API 문서에서 입력값 검증 실패 사례를 예시로 표시하는 데 사용된다.
 	 *
-	 * @return 검증 오류 예시를 담은 ExampleHolder(이름 "VALIDATION_ERROR", HTTP 상태 코드 400)
+	 * @return 이름이 "VALIDATION_ERROR"이고 HTTP 상태 코드 400을 갖는 ExampleHolder
 	 */
 	private ExampleHolder getValidationErrorHolder() {
 		Example example = new Example();

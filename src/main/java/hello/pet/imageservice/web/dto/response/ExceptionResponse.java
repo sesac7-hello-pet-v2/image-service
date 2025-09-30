@@ -44,15 +44,15 @@ public record ExceptionResponse(
 	Map<String, String> errors
 ) {
 	/**
-	 * 주어진 HTTP 상태, 애플리케이션 에러 코드 및 메시지로 ExceptionResponse 인스턴스를 생성하여 반환합니다.
+	 * 주어진 HTTP 상태와 애플리케이션 에러 정보로 ExceptionResponse 인스턴스를 생성합니다.
 	 *
-	 * <p>생성된 응답의 {@code status}는 전달된 {@link HttpStatus#value()} 값으로 설정되며,
-	 * {@code errors} 필드는 설정되지 않아 JSON 직렬화 시 생략됩니다.</p>
+	 * <p>생성된 응답의 {@code status}는 전달된 {@link HttpStatus#value()}로 설정되며,
+	 * {@code errors} 필드는 설정되지 않아 JSON 직렬화 시 포함되지 않습니다.</p>
 	 *
 	 * @param status HTTP 응답 상태를 나타내는 {@link HttpStatus}
 	 * @param code 애플리케이션별 에러 코드
 	 * @param message 사용자에게 표시할 에러 메시지
-	 * @return 구성된 {@link ExceptionResponse} 객체
+	 * @return 생성된 {@link ExceptionResponse} 객체
 	 */
 	public static ExceptionResponse of(HttpStatus status, String code, String message) {
 		return ExceptionResponse.builder()
