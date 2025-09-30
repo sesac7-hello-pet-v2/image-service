@@ -1,6 +1,7 @@
 package hello.pet.imageservice.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,7 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	private void uploadFileToS3(MultipartFile file, String s3Key) {
-		try {
+		try (InputStream is = file.getInputStream()) {
 			PutObjectRequest putObjectRequest = PutObjectRequest.builder()
 				.bucket(bucketName)
 				.key(s3Key)
@@ -64,7 +65,7 @@ public class ImageServiceImpl implements ImageService {
 				.build();
 
 			s3Client.putObject(putObjectRequest,
-				RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+				RequestBody.fromInputStream(is, file.getSize()));
 		} catch (IOException e) {
 			throw new HelloPetException(HelloPetExceptionCode.FILE_PROCESS_ERROR);
 		}
