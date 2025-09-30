@@ -43,10 +43,10 @@ public class SwaggerConfig {
 	public OpenAPI openAPI() {
 		return new OpenAPI()
 			.info(new Info()
-				.title("게시판(피드) 관련 API 명세서")
+				.title("이미지 관련 API 명세서")
 				.version("1.0.0")
-				.description("Hello Pet(v2) 게시판 서버의 API 문서입니다. <br>" +
-					"이 문서는 사용자 서버의 엔드포인트와 요청/응답 형식에 대한 정보를 제공합니다."
+				.description("Hello Pet(v2) 이미지 서비스의 API 문서입니다. <br>" +
+					"이 문서는 이미지 업로드 및 관리 엔드포인트와 요청/응답 형식에 대한 정보를 제공합니다."
 				)
 			).servers(
 				List.of(
