@@ -6,6 +6,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ImageServiceApplication {
 
+	/**
+	 * 애플리케이션을 부트스트랩하고 Spring 애플리케이션 컨텍스트를 시작한다.
+	 *
+	 * @param args 애플리케이션에 전달된 명령행 인수
+	 */
 	public static void main(String[] args) {
 		SpringApplication.run(ImageServiceApplication.class, args);
 	}

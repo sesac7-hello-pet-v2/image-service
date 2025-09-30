@@ -18,6 +18,12 @@ import lombok.RequiredArgsConstructor;
 public class ImageControllerImpl implements ImageController {
 	private final ImageService service;
 
+	/**
+	 * 멀티파트 폼데이터로 전달된 이미지 업로드 요청을 처리한다.
+	 *
+	 * @param uploadRequest multipart/form-data로 바인딩된 이미지 업로드 요청 DTO
+	 * @return 이미지 업로드 처리 결과를 담은 ImageUploadResponse와 함께 HTTP 200(OK) 응답
+	 */
 	@Override
 	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<ImageUploadResponse> uploadImage(@ModelAttribute ImageUploadRequest uploadRequest) {

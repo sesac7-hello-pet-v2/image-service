@@ -31,13 +31,14 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 public class MongoConfig {
 
 	/**
-	 * MongoDB 작업을 수행할 수 있는 {@link MongoTemplate} 빈을 정의합니다.
-	 * 이 템플릿은 MongoDB의 데이터베이스와 상호작용하며, `_class` 필드를 비활성화하여
-	 * MongoDB에 엔티티의 클래스 정보를 저장하지 않도록 설정합니다.
+	 * MongoDB와 상호작용하는 빈을 구성한다.
+	 *
+	 * MongoDB에 엔티티의 클래스 정보를 `_class` 필드로 저장하지 않도록 타입 매퍼를 비활성화한 상태로
+	 * MongoDB 연산에 사용할 템플릿을 반환한다.
 	 *
 	 * @param mongoDatabaseFactory MongoDB 데이터베이스 팩토리
-	 * @param converter MongoDB 변환기 (엔티티와 MongoDB 간의 데이터 변환을 처리)
-	 * @return MongoDB와의 상호작용을 위한 {@link MongoTemplate} 객체
+	 * @param converter MongoDB와 도메인 객체 간 변환을 처리하는 매퍼
+	 * @return MongoDB와의 상호작용에 사용되는 MongoTemplate 인스턴스
 	 */
 	@Bean
 	public MongoTemplate mongoTemplate(

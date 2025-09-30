@@ -32,6 +32,13 @@ public class ImageServiceImpl implements ImageService {
 	@Value("${spring.aws.s3.allowed-extensions}")
 	private String allowedExtensions;
 
+	/**
+	 * 이미지 파일을 검증하고 S3에 업로드한 뒤 업로드된 객체의 S3 키를 포함한 응답을 생성합니다.
+	 *
+	 * @param request 업로드할 파일과 업로더 정보를 포함하는 요청 객체 (파일, userId, 선택적 postId 등)
+	 * @return 업로드된 객체의 S3 키를 포함하는 ImageUploadResponse
+	 * @throws HelloPetException 파일 처리나 S3 업로드 오류가 발생한 경우 `FILE_PROCESS_ERROR`를 던집니다; 그 외의 예기치 않은 오류는 `INTERNAL_SERVER_ERROR`를 던집니다.
+	 */
 	@Override
 	public ImageUploadResponse uploadImage(ImageUploadRequest request) {
 		validateFile(request.file());
@@ -50,6 +57,15 @@ public class ImageServiceImpl implements ImageService {
 		}
 	}
 
+	/**
+	 * 파일 내용을 S3에 지정한 객체 키로 업로드한다.
+	 *
+	 * 업로드 시 콘텐츠 타입·길이와 원본 파일명 및 업로드 타임스탬프를 메타데이터로 설정한다.
+	 *
+	 * @param file  업로드할 multipart 파일
+	 * @param s3Key S3에 저장할 객체 키(경로 포함)
+	 * @throws HelloPetException 파일의 스트림을 읽거나 처리하는 과정에서 오류가 발생하면 `FILE_PROCESS_ERROR` 코드로 래핑하여 던진다.
+	 */
 	private void uploadFileToS3(MultipartFile file, String s3Key) {
 		try {
 			PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -70,6 +86,12 @@ public class ImageServiceImpl implements ImageService {
 		}
 	}
 
+	/**
+	 * userId와 선택적 postId, 업로드된 파일의 확장자 및 타임스탬프를 조합하여 S3에 저장할 객체 키를 생성합니다.
+	 *
+	 * @param request S3 키 생성을 위한 이미지 업로드 요청 — 내부적으로 userId, nullable한 postId, 그리고 파일의 원래 이름에서 확장자를 사용합니다.
+	 * @return 생성된 S3 객체 키(형식 예: "userId/1627384950123.jpg" 또는 "userId/postId/1627384950123.png").
+	 */
 	private String generateS3Key(ImageUploadRequest request) {
 		Long imageName = System.currentTimeMillis();
 		String imageExtension = getFileExtension(request.file().getOriginalFilename());
@@ -80,6 +102,17 @@ public class ImageServiceImpl implements ImageService {
 		}
 	}
 
+	/**
+	 * 업로드된 파일의 유효성을 검사한다.
+	 *
+	 * 파일이 비어 있지 않고 허용된 크기 및 확장자를 가지며 원본 파일명이 존재하는지 확인한다.
+	 *
+	 * @param file 검사할 업로드 파일
+	 * @throws HelloPetException FILE_IS_EMPTY when file is null or empty
+	 * @throws HelloPetException FILE_SIZE_BIG when file size exceeds configured maxFileSize
+	 * @throws HelloPetException FILE_NAME_IS_EMPTY when the original filename is null or blank
+	 * @throws HelloPetException FILE_EXTENSION_NOT_ALLOW when the file extension is not in the allowed list
+	 */
 	private void validateFile(MultipartFile file) {
 		if (file == null || file.isEmpty()) {
 			throw new HelloPetException(HelloPetExceptionCode.FILE_IS_EMPTY);
@@ -100,6 +133,12 @@ public class ImageServiceImpl implements ImageService {
 		}
 	}
 
+	/**
+	 * 파일 이름에서 마지막 점('.') 이후의 확장자를 추출한다.
+	 *
+	 * @param fileName 확장자를 추출할 파일 이름
+	 * @return 마침표를 제외한 확장자 문자열. 확장자가 없으면 빈 문자열을 반환한다.
+	 */
 	private String getFileExtension(String fileName) {
 		int lastDotIndex = fileName.lastIndexOf('.');
 		return (lastDotIndex >= 0) ? fileName.substring(lastDotIndex + 1) : "";
