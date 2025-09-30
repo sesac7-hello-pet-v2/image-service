@@ -22,7 +22,38 @@ public enum HelloPetExceptionCode {
 	S3_CONFIG_FAIL(
 		HttpStatus.INTERNAL_SERVER_ERROR,
 		"S3_CONFIG_FAIL",
-		"AWS의 S3 설정 중 알 수 없는 오류가 발생했습니다.");
+		"AWS의 S3 설정 중 알 수 없는 오류가 발생했습니다."
+	),
+	@ExplainError("업로드할 이미지가 없을 경우 발생하는 오류입니다.")
+	FILE_IS_EMPTY(
+		HttpStatus.BAD_REQUEST,
+		"FILE_NOT_FOUND",
+		"업로드를 진행할 이미지를 조회하지 못했습니다."
+	),
+	@ExplainError("업로드를 진행할 이미지의 사이즈가 너무 클경우 발생하는 오류입니다.")
+	FILE_SIZE_BIG(
+		HttpStatus.PAYLOAD_TOO_LARGE,
+		"FILE_TOO_LARGE",
+		"파일의 크기가 너무 큽니다."
+	),
+	@ExplainError("파일의 원본 이름이 비어있을 경우 발생하는 에러입니다.")
+	FILE_NAME_IS_EMPTY(
+		HttpStatus.BAD_REQUEST,
+		"FILE_NAME_IS_EMPTY",
+		"파일의 이름이 비어있습니다."
+	),
+	@ExplainError("지원하지 않는 확장자가 업로드 요청이 들어올 경우 발생하는 에러입니다.")
+	FILE_EXTENSION_NOT_ALLOW(
+		HttpStatus.BAD_REQUEST,
+		"FILE_EXTENSION_NOT_ALLOW",
+		"파일의 확장자를 지원하지 않습니다."
+	),
+	@ExplainError("이미지 처리중 알 수 없는 오류가 발생할 경우")
+	FILE_PROCESS_ERROR(
+		HttpStatus.INTERNAL_SERVER_ERROR,
+		"FILE_PROCESS_ERROR",
+		"이미지 업로드 중 오류가 발생했습니다."
+	);
 
 	private final HttpStatus status;
 	private final String code;
