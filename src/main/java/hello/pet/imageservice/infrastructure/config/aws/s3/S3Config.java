@@ -8,6 +8,7 @@ import hello.pet.imageservice.infrastructure.exception.HelloPetException;
 import hello.pet.imageservice.infrastructure.exception.HelloPetExceptionCode;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -25,6 +26,9 @@ public class S3Config {
 
 	@Bean
 	public S3Client s3Client() {
+		if (region == null || region.isEmpty()) {
+			throw new HelloPetException(HelloPetExceptionCode.S3_CONFIG_FAIL);
+		}
 		return S3Client.builder()
 			.region(Region.of(region))
 			.credentialsProvider(awsCredentialsProvider())
@@ -40,6 +44,6 @@ public class S3Config {
 				AwsBasicCredentials.create(accessKey, secretKey)
 			);
 		}
-		throw new HelloPetException(HelloPetExceptionCode.S3_CONFIG_FAIL);
+		return DefaultCredentialsProvider.create();
 	}
 }
