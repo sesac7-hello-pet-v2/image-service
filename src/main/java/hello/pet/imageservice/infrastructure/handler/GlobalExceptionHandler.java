@@ -65,6 +65,11 @@ public class GlobalExceptionHandler {
 			);
 	}
 
+	/**
+	 * 모든 예외를 처리하여 HTTP 500 내부 서버 오류 응답을 생성하고 반환한다.
+	 *
+	 * @return ResponseEntity - HTTP 500 상태와 INTERNAL_SERVER_ERROR 코드·메시지를 포함한 ExceptionResponse
+	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> exceptionHandler(Exception e) {
 		HelloPetExceptionCode code = HelloPetExceptionCode.INTERNAL_SERVER_ERROR;

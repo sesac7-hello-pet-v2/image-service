@@ -192,13 +192,13 @@ public class SwaggerConfig {
 	}
 
 	/**
-	 * HelloPetExceptionCode로부터 Swagger Example을 생성한다.
+	 * HelloPetExceptionCode에서 Swagger Example 객체를 생성한다.
 	 *
-	 * 생성되는 Example의 value는 ExceptionResponse.of(status, code, message)이며,
-	 * description은 먼저 code.getExplainError()의 결과를 사용하고 해당 호출이 NoSuchFieldException을 던지면 code.getMessage()로 대체한다.
+	 * Example의 value는 ExceptionResponse.of(status, code, message)이며,
+	 * description은 우선 code.getExplainError()의 결과를 사용하고 해당 호출이 NoSuchFieldException을 던지면 code.getMessage()로 대체된다.
 	 *
-	 * @param code 설명 및 상태 정보를 가진 예외 코드
-	 * @return ExceptionResponse를 value로 갖고 적절한 설명(description)이 설정된 Swagger Example
+	 * @param code 설명과 상태 정보를 제공하는 예외 코드
+	 * @return value에 ExceptionResponse를 갖고 적절한 description이 설정된 Swagger Example
 	 */
 	private Example getSwaggerExample(HelloPetExceptionCode code) {
 		String explain = "";
