@@ -52,7 +52,7 @@ public enum HelloPetExceptionCode {
 	FILE_PROCESS_ERROR(
 		HttpStatus.INTERNAL_SERVER_ERROR,
 		"FILE_PROCESS_ERROR",
-		"이미지 업로드 중 오류가 발생했습니다."
+		"이미지 처리중 오류가 발생했습니다."
 	);
 
 	private final HttpStatus status;

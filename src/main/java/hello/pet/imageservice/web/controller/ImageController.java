@@ -5,6 +5,7 @@ import static hello.pet.imageservice.infrastructure.exception.HelloPetExceptionC
 import org.springframework.http.ResponseEntity;
 
 import hello.pet.imageservice.infrastructure.config.swagger.annotation.ApiErrorCodeExamples;
+import hello.pet.imageservice.web.dto.request.ImageDeleteRequest;
 import hello.pet.imageservice.web.dto.request.ImageUploadRequest;
 import hello.pet.imageservice.web.dto.response.ImageUploadResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,4 +28,6 @@ public interface ImageController {
 	})
 	@ApiResponse(responseCode = "200", description = "OK - 이미지 업로드에 성공하였습니다.")
 	ResponseEntity<ImageUploadResponse> uploadImage(ImageUploadRequest uploadRequest);
+
+	ResponseEntity<?> deleteImage(ImageDeleteRequest request);
 }
