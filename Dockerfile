@@ -20,8 +20,8 @@ COPY . .
 # 애플리케이션 빌드
 RUN ./gradlew build -x test --no-daemon
 
-# 빌드된 JAR 파일을 실행 가능한 위치로 복사
-RUN cp build/libs/*.jar app.jar
+# 빌드된 JAR 파일을 실행 가능한 위치로 복사 (plain JAR 제외)
+RUN find build/libs -name '*.jar' ! -name '*-plain.jar' -exec cp {} app.jar \;
 
 # 포트 노출 (image-service의 기본 포트)
 EXPOSE 8084

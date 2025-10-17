@@ -86,9 +86,9 @@ jobs:
           if [[ "$BRANCH_NAME" == "develop" ]]; then
             docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:dev-develop
             echo "Tagged as dev-develop for develop branch"
-          elif [[ "$BRANCH_NAME" == "main" ]]; then
-            docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:v$(date +%Y%m%d)-${{ github.sha:0:7 }}
-            echo "Tagged as production version for main branch"
+          elif [[ "$BRANCH_NAME" == "release" ]]; then
+            docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:v$(date +%Y%m%d)-${{ github.sha }}
+            echo "Tagged as production version for release branch"
           elif [[ "$BRANCH_NAME" =~ ^dev/.* ]]; then
             docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:dev-${BRANCH_NAME#dev/}
             echo "Tagged as dev-${BRANCH_NAME#dev/} for personal dev branch"
@@ -105,8 +105,8 @@ jobs:
           # 브랜치별 추가 태그 푸시
           if [[ "$BRANCH_NAME" == "develop" ]]; then
             docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:dev-develop
-          elif [[ "$BRANCH_NAME" == "main" ]]; then
-            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:v$(date +%Y%m%d)-${{ github.sha:0:7 }}
+          elif [[ "$BRANCH_NAME" == "release" ]]; then
+            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:v$(date +%Y%m%d)-${{ github.sha }}
           elif [[ "$BRANCH_NAME" =~ ^dev/.* ]]; then
             docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:dev-${BRANCH_NAME#dev/}
           elif [[ "$BRANCH_NAME" =~ ^qa/.* ]]; then
