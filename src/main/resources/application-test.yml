@@ -1,0 +1,15 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  aws:
+    s3:
+      bucket-name: test-bucket
+      region: ap-northeast-2
+      access-key: test-access-key
+      secret-key: test-secret-key
+      allowed-extensions: jpg,jpeg,png,gif,webp
+      max-file-size: 10485760
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/hello-pet-v2-test
