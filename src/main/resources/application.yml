@@ -9,5 +9,4 @@ spring:
       max-file-size: 10MB
       max-request-size: 100MB
   profiles:
-    active:
-      - dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}

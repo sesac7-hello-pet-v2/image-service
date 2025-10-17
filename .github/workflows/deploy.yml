@@ -18,6 +18,7 @@ env:
   ECR_REPOSITORY: sesac-hello-pet-ecr-image-service
   SERVICE_NAME: image-service
   SERVICE_PORT: 8084
+  SPRING_PROFILES_ACTIVE: prod
 
 jobs:
   build-and-push:
