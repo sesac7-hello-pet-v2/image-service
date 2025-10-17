@@ -1,0 +1,40 @@
+# Gradle
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+Dockerfile.*
+.dockerignore
+
+# Logs
+*.log
+
+# Testing
+.coverage
+coverage/
+
+# Documentation
+*.md
+docs/
+
+# Development files
+*.tmp
+*.bak
