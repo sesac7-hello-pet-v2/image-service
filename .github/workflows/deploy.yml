@@ -15,7 +15,7 @@ on:
 env:
   AWS_REGION: ap-northeast-2
   ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com
-  ECR_REPOSITORY: hello-pet-image-service
+  ECR_REPOSITORY: sesac-hello-pet-ecr-image-service
   SERVICE_NAME: image-service
   SERVICE_PORT: 8084
 
@@ -77,17 +77,41 @@ jobs:
         run: |
           # Docker 이미지 빌드
           docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
-          
-          # 태그 생성
+
+          # 태그 생성 (Terraform ECR 정책에 맞게)
           docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
           docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
-          docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:$BRANCH_NAME
-          
+
+          # 브랜치별 태그 전략 (IMMUTABLE_WITH_EXCLUSION 정책 준수)
+          if [[ "$BRANCH_NAME" == "develop" ]]; then
+            docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:dev-develop
+            echo "Tagged as dev-develop for develop branch"
+          elif [[ "$BRANCH_NAME" == "main" ]]; then
+            docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:v$(date +%Y%m%d)-${{ github.sha:0:7 }}
+            echo "Tagged as production version for main branch"
+          elif [[ "$BRANCH_NAME" =~ ^dev/.* ]]; then
+            docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:dev-${BRANCH_NAME#dev/}
+            echo "Tagged as dev-${BRANCH_NAME#dev/} for personal dev branch"
+          elif [[ "$BRANCH_NAME" =~ ^qa/.* ]]; then
+            docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:qa-${BRANCH_NAME#qa/}
+            echo "Tagged as qa-${BRANCH_NAME#qa/} for qa branch"
+          fi
+
           # ECR에 푸시
-          echo "Pushing ${{ env.ECR_REPOSITORY }}:$IMAGE_TAG"
+          echo "Pushing images to ECR..."
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
-          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:$BRANCH_NAME
+
+          # 브랜치별 추가 태그 푸시
+          if [[ "$BRANCH_NAME" == "develop" ]]; then
+            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:dev-develop
+          elif [[ "$BRANCH_NAME" == "main" ]]; then
+            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:v$(date +%Y%m%d)-${{ github.sha:0:7 }}
+          elif [[ "$BRANCH_NAME" =~ ^dev/.* ]]; then
+            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:dev-${BRANCH_NAME#dev/}
+          elif [[ "$BRANCH_NAME" =~ ^qa/.* ]]; then
+            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:qa-${BRANCH_NAME#qa/}
+          fi
 
       - name: Get image details
         id: image-details
