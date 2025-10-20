@@ -24,7 +24,7 @@ RUN ./gradlew build -x test --no-daemon
 RUN find build/libs -name '*.jar' ! -name '*-plain.jar' -exec cp {} app.jar \;
 
 # 포트 노출 (image-service의 기본 포트)
-EXPOSE 8084
+EXPOSE 8088
 
 # 애플리케이션 실행
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
