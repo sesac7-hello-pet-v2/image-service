@@ -12,6 +12,3 @@ spring:
       allowed-extensions: jpg,jpeg,png,gif,webp
       # 최대 파일 크기 (바이트)
       max-file-size: 10485760 # 10MB
-  data:
-    mongodb:
-      uri: ${MONGODB_URL}
