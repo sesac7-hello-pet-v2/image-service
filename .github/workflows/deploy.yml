@@ -122,6 +122,62 @@ jobs:
           echo "image-uri=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}" >> $GITHUB_OUTPUT
           echo "image-tag=${{ github.sha }}" >> $GITHUB_OUTPUT
 
+      - name: Checkout manifest repository
+        uses: actions/checkout@v4
+        with:
+          repository: sesac7-hello-pet-v2/hello-pet-manifest
+          token: ${{ secrets.MANIFEST_REPO_TOKEN }}
+          path: manifest-repo
+
+      - name: Update manifest repository
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          cd manifest-repo/${{ env.SERVICE_NAME }}
+
+          # 브랜치별 태그 업데이트 전략
+          if [[ "$BRANCH_NAME" == "develop" ]]; then
+            # develop 브랜치는 commit hash로 업데이트
+            sed -i "s|tag:.*|tag: \"$IMAGE_TAG\"|g" values.yaml
+            echo "Updated develop branch with commit hash: $IMAGE_TAG"
+          elif [[ "$BRANCH_NAME" == "release" ]]; then
+            # release 브랜치는 production 버전 태그로 업데이트
+            PROD_TAG="v$(date +%Y%m%d)-$IMAGE_TAG"
+            sed -i "s|tag:.*|tag: \"$PROD_TAG\"|g" values.yaml
+            echo "Updated release branch with production tag: $PROD_TAG"
+          else
+            # 기타 브랜치는 commit hash 사용
+            sed -i "s|tag:.*|tag: \"$IMAGE_TAG\"|g" values.yaml
+            echo "Updated $BRANCH_NAME branch with commit hash: $IMAGE_TAG"
+          fi
+
+          # 변경사항 확인
+          echo "Updated values.yaml:"
+          grep "tag:" values.yaml
+
+      - name: Commit and push manifest changes
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          cd manifest-repo
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ${{ env.SERVICE_NAME }}/values.yaml
+
+          # 브랜치별 커밋 메시지
+          if [[ "$BRANCH_NAME" == "develop" ]]; then
+            git commit -m "🚀 Update ${{ env.SERVICE_NAME }} image tag to $IMAGE_TAG (develop)" || exit 0
+          elif [[ "$BRANCH_NAME" == "release" ]]; then
+            PROD_TAG="v$(date +%Y%m%d)-$IMAGE_TAG"
+            git commit -m "🎉 Release ${{ env.SERVICE_NAME }} production version $PROD_TAG" || exit 0
+          else
+            git commit -m "🔧 Update ${{ env.SERVICE_NAME }} image tag to $IMAGE_TAG ($BRANCH_NAME)" || exit 0
+          fi
+
+          git push
+
       - name: Summary
         run: |
           echo "## 🚀 Image Service Deployment Summary" >> $GITHUB_STEP_SUMMARY
@@ -133,6 +189,7 @@ jobs:
           echo "| Branch | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Port | ${{ env.SERVICE_PORT }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Image URI | ${{ steps.image-details.outputs.image-uri }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Manifest Updated | ✅ |" >> $GITHUB_STEP_SUMMARY
 
   notify:
     needs: build-and-push
