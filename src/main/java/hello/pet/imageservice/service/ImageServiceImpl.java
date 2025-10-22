@@ -29,6 +29,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
 	private final S3Client s3Client;
+	private final AsyncImageService asyncImageService;
 	@Value("${spring.aws.s3.bucket-name}")
 	private String bucketName;
 	@Value("${spring.aws.s3.max-file-size}")
@@ -41,7 +42,18 @@ public class ImageServiceImpl implements ImageService {
 		validateFile(request.file());
 		String s3Key = generateS3Key(request);
 		try {
+			// 원본 이미지 S3 업로드
 			uploadFileToS3(request.file(), s3Key);
+
+			// 비동기로 리사이징된 이미지들 생성 및 업로드
+			try (InputStream imageStream = request.file().getInputStream()) {
+				asyncImageService.resizeAndUploadAsync(
+					imageStream,
+					s3Key,
+					request.file().getContentType()
+				);
+			}
+
 			return ImageUploadResponse.builder()
 				.s3Key(s3Key)
 				.build();
