@@ -100,20 +100,39 @@ jobs:
             echo "Tagged as qa-${BRANCH_NAME#qa/} for qa branch"
           fi
 
-          # ECR에 푸시
+          # ECR에 푸시 (중복 확인)
           echo "Pushing images to ECR..."
-          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
-          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
 
-          # 브랜치별 추가 태그 푸시
+          # 이미지 존재 여부 확인 함수
+          check_image_exists() {
+            local tag=$1
+            aws ecr describe-images --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=$tag --region ${{ env.AWS_REGION }} >/dev/null 2>&1
+          }
+
+          # commit hash 태그 푸시 (중복 확인)
+          if check_image_exists "$IMAGE_TAG"; then
+            echo "Image with tag $IMAGE_TAG already exists, skipping push"
+          else
+            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+          fi
+
+          # latest 태그는 항상 푸시 (덮어쓰기 허용)
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest || echo "Latest push failed, continuing..."
+
+          # 브랜치별 추가 태그 푸시 (덮어쓰기 허용)
           if [[ "$BRANCH_NAME" == "develop" ]]; then
-            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:dev-develop
+            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:dev-develop || echo "dev-develop push failed, continuing..."
           elif [[ "$BRANCH_NAME" == "release" ]]; then
-            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:v$(date +%Y%m%d)-${{ github.sha }}
+            PROD_TAG="v$(date +%Y%m%d)-${{ github.sha }}"
+            if check_image_exists "$PROD_TAG"; then
+              echo "Production image with tag $PROD_TAG already exists, skipping push"
+            else
+              docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:$PROD_TAG
+            fi
           elif [[ "$BRANCH_NAME" =~ ^dev/.* ]]; then
-            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:dev-${BRANCH_NAME#dev/}
+            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:dev-${BRANCH_NAME#dev/} || echo "dev branch push failed, continuing..."
           elif [[ "$BRANCH_NAME" =~ ^qa/.* ]]; then
-            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:qa-${BRANCH_NAME#qa/}
+            docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:qa-${BRANCH_NAME#qa/} || echo "qa branch push failed, continuing..."
           fi
 
       - name: Get image details
@@ -164,19 +183,46 @@ jobs:
           cd manifest-repo
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add ${{ env.SERVICE_NAME }}/values.yaml
 
-          # 브랜치별 커밋 메시지
-          if [[ "$BRANCH_NAME" == "develop" ]]; then
-            git commit -m "🚀 Update ${{ env.SERVICE_NAME }} image tag to $IMAGE_TAG (develop)" || exit 0
-          elif [[ "$BRANCH_NAME" == "release" ]]; then
-            PROD_TAG="v$(date +%Y%m%d)-$IMAGE_TAG"
-            git commit -m "🎉 Release ${{ env.SERVICE_NAME }} production version $PROD_TAG" || exit 0
-          else
-            git commit -m "🔧 Update ${{ env.SERVICE_NAME }} image tag to $IMAGE_TAG ($BRANCH_NAME)" || exit 0
-          fi
+          # 최대 5번 재시도
+          for i in {1..5}; do
+            echo "Attempt $i to update manifest..."
 
-          git push
+            # 최신 상태로 pull
+            git pull origin main || git pull origin master || true
+
+            git add ${{ env.SERVICE_NAME }}/values.yaml
+
+            # 브랜치별 커밋 메시지
+            if [[ "$BRANCH_NAME" == "develop" ]]; then
+              COMMIT_MSG="🚀 Update ${{ env.SERVICE_NAME }} image tag to $IMAGE_TAG (develop)"
+            elif [[ "$BRANCH_NAME" == "release" ]]; then
+              PROD_TAG="v$(date +%Y%m%d)-$IMAGE_TAG"
+              COMMIT_MSG="🎉 Release ${{ env.SERVICE_NAME }} production version $PROD_TAG"
+            else
+              COMMIT_MSG="🔧 Update ${{ env.SERVICE_NAME }} image tag to $IMAGE_TAG ($BRANCH_NAME)"
+            fi
+
+            # 변경사항이 있는 경우에만 커밋
+            if git diff --staged --quiet; then
+              echo "No changes to commit"
+              break
+            fi
+
+            git commit -m "$COMMIT_MSG" || continue
+
+            # 푸시 시도
+            if git push; then
+              echo "Successfully pushed manifest changes"
+              break
+            else
+              echo "Push failed, retrying in $((i * 2)) seconds..."
+              sleep $((i * 2))
+
+              # 충돌 해결을 위해 리베이스 시도
+              git pull --rebase origin main || git pull --rebase origin master || true
+            fi
+          done
 
       - name: Summary
         run: |
