@@ -33,22 +33,26 @@ public class AsyncImageService {
 
 	@Async("imageResizeExecutor")
 	public CompletableFuture<Void> resizeAndUploadAsync(
-		InputStream originalImage,
+		byte[] originalImageBytes,
 		String originalS3Key,
 		String contentType) {
 		try {
 			log.info("Starting async image resize for: {}", originalS3Key);
 
 			// Feed용 리사이징 (600x600)
-			BufferedImage feedImage = imageUtils.getResizingImage(originalImage, ImageUtils.ImageSize.FEED);
-			String feedS3Key = generateResizedKey(originalS3Key, "feed");
-			uploadResizedImage(feedImage, feedS3Key, contentType);
+			try (InputStream feedInputStream = new java.io.ByteArrayInputStream(originalImageBytes)) {
+				BufferedImage feedImage = imageUtils.getResizingImage(feedInputStream, ImageUtils.ImageSize.FEED);
+				String feedS3Key = generateResizedKey(originalS3Key, "feed");
+				uploadResizedImage(feedImage, feedS3Key, contentType);
+			}
 
 			// Thumbnail용 리사이징 (300x300)
-			originalImage.reset(); // InputStream 재사용을 위해 reset
-			BufferedImage thumbnailImage = imageUtils.getResizingImage(originalImage, ImageUtils.ImageSize.THUMBNAIL);
-			String thumbnailS3Key = generateResizedKey(originalS3Key, "thumb");
-			uploadResizedImage(thumbnailImage, thumbnailS3Key, contentType);
+			try (InputStream thumbnailInputStream = new java.io.ByteArrayInputStream(originalImageBytes)) {
+				BufferedImage thumbnailImage = imageUtils.getResizingImage(thumbnailInputStream,
+					ImageUtils.ImageSize.THUMBNAIL);
+				String thumbnailS3Key = generateResizedKey(originalS3Key, "thumb");
+				uploadResizedImage(thumbnailImage, thumbnailS3Key, contentType);
+			}
 
 			log.info("Completed async image resize for: {}", originalS3Key);
 			return CompletableFuture.completedFuture(null);

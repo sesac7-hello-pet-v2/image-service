@@ -46,13 +46,12 @@ public class ImageServiceImpl implements ImageService {
 			uploadFileToS3(request.file(), s3Key);
 
 			// 비동기로 리사이징된 이미지들 생성 및 업로드
-			try (InputStream imageStream = request.file().getInputStream()) {
-				asyncImageService.resizeAndUploadAsync(
-					imageStream,
-					s3Key,
-					request.file().getContentType()
-				);
-			}
+			byte[] imageBytes = request.file().getBytes();
+			asyncImageService.resizeAndUploadAsync(
+				imageBytes,
+				s3Key,
+				request.file().getContentType()
+			);
 
 			return ImageUploadResponse.builder()
 				.s3Key(s3Key)
