@@ -46,7 +46,7 @@ public enum HelloPetExceptionCode {
 	FILE_EXTENSION_NOT_ALLOW(
 		HttpStatus.BAD_REQUEST,
 		"FILE_EXTENSION_NOT_ALLOW",
-		"파일의 확장자를 지원하지 않습니다."
+		"지원하지 않는 파일 형식입니다. jpg, jpeg, png 파일만 업로드 가능합니다."
 	),
 	@ExplainError("이미지 처리중 알 수 없는 오류가 발생할 경우")
 	FILE_PROCESS_ERROR(

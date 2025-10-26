@@ -58,6 +58,9 @@ dependencies {
 
     // 혹시 모를 이미지 회전 문제 해결을 위한 종속성
     implementation 'com.drewnoakes:metadata-extractor:2.19.0'
+
+    // WebP 이미지 포맷 지원
+    implementation 'org.sejda.imageio:webp-imageio:0.1.6'
 }
 
 dependencyManagement {

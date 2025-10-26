@@ -9,6 +9,6 @@ spring:
       access-key: ${AWS_S3_ACCESS_KEY}
       secret-key: ${AWS_S3_SECRET_KEY}
       # 업로드 가능한 파일 확장자
-      allowed-extensions: jpg,jpeg,png,gif,webp
+      allowed-extensions: jpg,jpeg,png
       # 최대 파일 크기 (바이트)
       max-file-size: 10485760 # 10MB

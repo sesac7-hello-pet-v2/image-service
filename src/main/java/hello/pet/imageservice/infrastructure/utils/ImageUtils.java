@@ -35,6 +35,10 @@ public class ImageUtils {
 			// 이미지 로드
 			BufferedImage bufferedImage = ImageIO.read(imageInputStream);
 
+			if (bufferedImage == null) {
+				throw new RuntimeException("Failed to read image - unsupported format or corrupted image");
+			}
+
 			// 이미지 회전
 			bufferedImage = rotateImageIfRequired(bufferedImage, orientation);
 
