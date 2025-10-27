@@ -94,13 +94,16 @@ public class ImageServiceImpl implements ImageService {
 
 	private void uploadFileToS3(MultipartFile file, String s3Key) {
 		try (InputStream is = file.getInputStream()) {
+			// 안전한 파일명 생성 (메타데이터용)
+			String safeFileName = sanitizeFileName(file.getOriginalFilename());
+
 			PutObjectRequest putObjectRequest = PutObjectRequest.builder()
 				.bucket(bucketName)
 				.key(s3Key)
 				.contentType(file.getContentType())
 				.contentLength(file.getSize())
 				.metadata(Map.of(
-					"original-filename", file.getOriginalFilename(),
+					"original-filename", safeFileName,
 					"upload-timestamp", String.valueOf(System.currentTimeMillis())
 				))
 				.build();
@@ -138,6 +141,13 @@ public class ImageServiceImpl implements ImageService {
 		if (fileName == null || fileName.trim().isEmpty()) {
 			throw new HelloPetException(HelloPetExceptionCode.FILE_NAME_IS_EMPTY);
 		}
+
+		// 파일명 길이 검증 (최대 255자로 제한)
+		if (fileName.length() > 255) {
+			log.warn("파일명이 너무 깁니다. 길이: {}, 파일명: {}", fileName.length(), fileName);
+			// 파일명이 길어도 업로드는 허용하되 메타데이터 저장 시 잘라서 저장
+		}
+
 		String extension = getFileExtension(fileName).toLowerCase();
 		List<String> allowedExtensionList = Arrays.asList(allowedExtensions.split(","));
 
@@ -149,5 +159,52 @@ public class ImageServiceImpl implements ImageService {
 	private String getFileExtension(String fileName) {
 		int lastDotIndex = fileName.lastIndexOf('.');
 		return (lastDotIndex >= 0) ? fileName.substring(lastDotIndex + 1) : "";
+	}
+
+	/**
+	 * 파일명을 안전하게 처리합니다.
+	 * - 길이 제한 (200자로 제한하되 확장자는 보존)
+	 * - 특수문자 제거
+	 * - UTF-8 인코딩 안전성 보장
+	 */
+	private String sanitizeFileName(String originalFileName) {
+		if (originalFileName == null || originalFileName.trim().isEmpty()) {
+			return "unknown_file";
+		}
+
+		String fileName = originalFileName.trim();
+
+		// 파일명에서 확장자 분리
+		String baseName;
+		String extension = "";
+		int lastDotIndex = fileName.lastIndexOf('.');
+		if (lastDotIndex > 0) {
+			baseName = fileName.substring(0, lastDotIndex);
+			extension = fileName.substring(lastDotIndex);
+		} else {
+			baseName = fileName;
+		}
+
+		// 특수문자 제거 (알파벳, 숫자, 한글, 공백, 하이픈, 언더스코어만 허용)
+		baseName = baseName.replaceAll("[^a-zA-Z0-9가-힣\\s\\-_]", "");
+
+		// 연속된 공백을 하나로 치환
+		baseName = baseName.replaceAll("\\s+", " ");
+
+		// 앞뒤 공백 제거
+		baseName = baseName.trim();
+
+		// 빈 문자열인 경우 기본값 설정
+		if (baseName.isEmpty()) {
+			baseName = "file_" + System.currentTimeMillis();
+		}
+
+		// 길이 제한 (확장자 포함해서 200자 이내)
+		int maxBaseNameLength = 200 - extension.length();
+		if (baseName.length() > maxBaseNameLength) {
+			baseName = baseName.substring(0, maxBaseNameLength);
+		}
+
+		return baseName + extension;
 	}
 }
