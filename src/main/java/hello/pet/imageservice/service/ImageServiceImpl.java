@@ -115,10 +115,14 @@ public class ImageServiceImpl implements ImageService {
 	private String generateS3Key(ImageUploadRequest request) {
 		String imageName = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 5);
 		String imageExtension = getFileExtension(request.file().getOriginalFilename());
-		if (request.postId() == null) {
-			return String.format("%s/%s.%s", request.userId(), imageName, imageExtension);
+
+		// 새로운 경로 구조: userId/type/postId/image.ext
+		// postId가 없는 경우: userId/type/image.ext
+		if (request.postId() == null || request.postId().trim().isEmpty()) {
+			return String.format("%s/%s/%s.%s", request.userId(), request.type(), imageName, imageExtension);
 		} else {
-			return String.format("%s/%s/%s.%s", request.userId(), request.postId(), imageName, imageExtension);
+			return String.format("%s/%s/%s/%s.%s", request.userId(), request.type(), request.postId(), imageName,
+				imageExtension);
 		}
 	}
 
